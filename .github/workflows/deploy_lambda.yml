@@ -1,0 +1,71 @@
+name: Deploy IMDB Lambda
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_REPO_NAME: imdb-lambda-repo
+      TF_STATE_BUCKET: 503561450616-statefile-terraform
+      TF_STATE_KEY: imdb-lambda/terraform.tfstate
+
+    steps:
+      # 1️⃣ Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Configura AWS via OIDC
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::503561450616:role/role-github-terraform-build
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3️⃣ Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
+
+      # 4️⃣ Setup Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 5️⃣ Login no ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 503561450616.dkr.ecr.$AWS_REGION.amazonaws.com
+
+      # 6️⃣ Criar repositório ECR se não existir
+      - name: Create ECR repository if not exists
+        run: |
+          aws ecr describe-repositories --repository-names $ECR_REPO_NAME || \
+          aws ecr create-repository --repository-name $ECR_REPO_NAME
+
+      # 7️⃣ Build e push do container
+      - name: Build and push Docker image
+        id: build-image
+        run: |
+          IMAGE_URI=503561450616.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+
+      # 8️⃣ Terraform Init
+      - name: Terraform Init
+        working-directory: terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -ba

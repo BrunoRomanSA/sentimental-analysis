@@ -1,0 +1,32 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.swp
+venv
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# ===========================
+# Jupyter Notebooks
+# ===========================
+.ipynb_checkpoints
+
+# ===========================
+# MLflow local
+# ===========================
+mlruns/
+
+# ===========================
+# Sistema operacional
+# ===========================
+.DS_Store
+Thumbs.db
