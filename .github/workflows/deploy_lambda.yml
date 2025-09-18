@@ -3,7 +3,7 @@ name: Deploy IMDB Lambda
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   deploy:
