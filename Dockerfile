@@ -1,4 +1,7 @@
-FROM public.ecr.aws/lambda/python:3.11
+FROM public.ecr.aws/lambda/python:3.12
+
+# Instala build tools
+RUN yum install -y gcc gcc-c++ make && yum clean all
 
 # Copia os arquivos
 COPY app.py requirements.txt ./
