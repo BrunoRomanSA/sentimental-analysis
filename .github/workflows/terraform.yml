@@ -51,7 +51,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform destroy
-        if: steps.read-destroy-json.outputs.destroy == 'true'
+        # if: steps.read-destroy-json.outputs.destroy == 'true'
         id: terraform-destroy
         run: |
           cd infra
