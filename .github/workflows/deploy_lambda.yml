@@ -43,11 +43,34 @@ jobs:
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 503561450616.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      # 6️⃣ Criar repositório ECR se não existir
       - name: Create ECR repository if not exists
         run: |
-          aws ecr describe-repositories --repository-names $ECR_REPO_NAME || \
-          aws ecr create-repository --repository-name $ECR_REPO_NAME
+          if ! aws ecr describe-repositories --repository-names $ECR_REPO_NAME >/dev/null 2>&1; then
+            echo "Repository does not exist. Creating..."
+            aws ecr create-repository --repository-name $ECR_REPO_NAME
+          else
+            echo "Repository already exists."
+          fi
+
+          # Adicionar policy para permitir Lambda puxar imagens
+          aws ecr set-repository-policy \
+            --repository-name $ECR_REPO_NAME \
+            --policy-text '{
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "LambdaECRImageRetrievalPolicy",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                  },
+                  "Action": [
+                    "ecr:BatchGetImage",
+                    "ecr:GetDownloadUrlForLayer"
+                  ]
+                }
+              ]
+            }'
 
       # 7️⃣ Build e push do container
       - name: Build and push Docker image
