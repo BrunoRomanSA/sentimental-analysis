@@ -7,7 +7,3 @@ variable "mlflow_tracking_uri" {
   type        = string
 }
 
-variable "lambda_role_arn" {
-  description = "ARN da role da Lambda com permissões básicas"
-  type        = string
-}

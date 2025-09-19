@@ -52,5 +52,10 @@ resource "aws_lambda_function" "imdb_lambda" {
 
   # Role da Lambda
   role = aws_iam_role.lambda_exec_role.arn
+
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_ecr_repository.lambda_repo
+  ]
 }
 
