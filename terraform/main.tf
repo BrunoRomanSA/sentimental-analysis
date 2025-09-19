@@ -5,6 +5,10 @@ provider "aws" {
 # ECR Repository
 resource "aws_ecr_repository" "lambda_repo" {
   name = "imdb-lambda-repo"
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [repository_url] # opcional
+  }
 }
 
 # -----------------------------
