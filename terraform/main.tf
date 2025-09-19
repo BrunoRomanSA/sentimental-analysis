@@ -3,13 +3,13 @@ provider "aws" {
 }
 
 # ECR Repository
-resource "aws_ecr_repository" "lambda_repo" {
-  name = "imdb-lambda-repo"
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [repository_url] # opcional
-  }
-}
+# resource "aws_ecr_repository" "lambda_repo" {
+#   name = "imdb-lambda-repo"
+#   lifecycle {
+#     prevent_destroy = true
+#     ignore_changes  = [repository_url] # opcional
+#   }
+# }
 
 # -----------------------------
 # IAM Role para Lambda
@@ -42,7 +42,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 resource "aws_lambda_function" "imdb_lambda" {
   function_name = "imdb-sentiment-lambda"
   package_type  = "Image"
-  image_uri     = "${aws_ecr_repository.lambda_repo.repository_url}:latest"
+  image_uri     = "503561450616.dkr.ecr.us-east-1.amazonaws.com/imdb-lambda-repo:latest:latest"
 
   timeout     = 30
   memory_size = 1024
@@ -58,8 +58,7 @@ resource "aws_lambda_function" "imdb_lambda" {
   role = aws_iam_role.lambda_exec_role.arn
 
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_logs,
-    aws_ecr_repository.lambda_repo
+    aws_iam_role_policy_attachment.lambda_logs
   ]
 }
 
