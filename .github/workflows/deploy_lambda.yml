@@ -61,7 +61,6 @@ jobs:
           docker push $IMAGE_URI
 
   setup-infra:
-    needs: deploy
     uses: ./.github/workflows/terraform.yml
     with:
       environment: dev

@@ -89,7 +89,8 @@ resource "aws_lambda_function" "imdb_lambda" {
   role = aws_iam_role.lambda_exec_role.arn
 
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_logs
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_ecr_policy
   ]
 }
 
