@@ -54,23 +54,30 @@ jobs:
       - name: Terraform destroy
         if: steps.read-destroy-json.outputs.destroy == 'true'
         id: terraform-destroy
-        run: cd infra &&
-          terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }} &&
+        run: |
+          cd infra
+          terraform workspace select -or-create ${{ inputs.environment }}
           terraform destroy -var-file="./${{ inputs.environment }}/terraform.tfvars" -auto-approve
+
       
       - name: Terraform Plan
         if: steps.read-destroy-json.outputs.destroy != 'true'
         id: terraform-plan
-        run: cd infra &&
-          terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }} || true &&
+        run: |
+          cd infra
+          terraform workspace select -or-create ${{ inputs.environment }}
           terraform plan -var-file="./${{ inputs.environment }}/terraform.tfvars" -out="${{ inputs.environment }}.plan"
+
+
 
       - name: Terraform Apply
         if: steps.read-destroy-json.outputs.destroy != 'true'
         id: terraform-apply
-        run: cd infra &&
-          terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }} || true &&
+        run: |
+          cd infra
+          terraform workspace select -or-create ${{ inputs.environment }}
           terraform apply "${{ inputs.environment }}.plan"
+
 
       - name: End Workflow if Destroy
         if: steps.read-destroy-json.outputs.destroy == 'true'
