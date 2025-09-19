@@ -59,27 +59,27 @@ jobs:
           terraform destroy -var-file="./${{ inputs.environment }}/terraform.tfvars" -auto-approve
 
       
-      - name: Terraform Plan
-        if: steps.read-destroy-json.outputs.destroy != 'true'
-        id: terraform-plan
-        run: |
-          cd infra
-          terraform workspace select -or-create ${{ inputs.environment }}
-          terraform plan -var-file="./${{ inputs.environment }}/terraform.tfvars" -out="${{ inputs.environment }}.plan"
+      # - name: Terraform Plan
+      #   if: steps.read-destroy-json.outputs.destroy != 'true'
+      #   id: terraform-plan
+      #   run: |
+      #     cd infra
+      #     terraform workspace select -or-create ${{ inputs.environment }}
+      #     terraform plan -var-file="./${{ inputs.environment }}/terraform.tfvars" -out="${{ inputs.environment }}.plan"
 
 
 
-      - name: Terraform Apply
-        if: steps.read-destroy-json.outputs.destroy != 'true'
-        id: terraform-apply
-        run: |
-          cd infra
-          terraform workspace select -or-create ${{ inputs.environment }}
-          terraform apply "${{ inputs.environment }}.plan"
+      # - name: Terraform Apply
+      #   if: steps.read-destroy-json.outputs.destroy != 'true'
+      #   id: terraform-apply
+      #   run: |
+      #     cd infra
+      #     terraform workspace select -or-create ${{ inputs.environment }}
+      #     terraform apply "${{ inputs.environment }}.plan"
 
 
       - name: End Workflow if Destroy
-        if: steps.read-destroy-json.outputs.destroy == 'true'
+        # if: steps.read-destroy-json.outputs.destroy == 'true'
         run: |
           echo "Destroy operation detected. Exiting workflow."
           exit 0
