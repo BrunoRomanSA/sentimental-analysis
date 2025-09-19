@@ -7,27 +7,9 @@ resource "aws_ecr_repository" "lambda_repo" {
   name = "imdb-lambda-repo"
 }
 
-# Lambda Function usando container image do ECR
-resource "aws_lambda_function" "imdb_lambda" {
-  function_name = "imdb-sentiment-lambda"
-  package_type  = "Image"
-  image_uri     = "${aws_ecr_repository.lambda_repo.repository_url}:latest"
-
-  timeout     = 30
-  memory_size = 1024
-
-  # Variáveis de ambiente
-  environment {
-    variables = {
-      MLFLOW_TRACKING_URI = var.mlflow_tracking_uri
-    }
-  }
-
-  # Role da Lambda
-  role = var.lambda_role_arn
-}
-
-# IAM Role mínima para Lambda (caso queira criar via Terraform)
+# -----------------------------
+# IAM Role para Lambda
+# -----------------------------
 resource "aws_iam_role" "lambda_exec_role" {
   name = "imdb-lambda-exec-role"
 
@@ -45,8 +27,30 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
-# Policy attach opcional para Lambda executar logs
+# Attach policy mínima para logs
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+
+
+# Lambda Function usando container image do ECR
+resource "aws_lambda_function" "imdb_lambda" {
+  function_name = "imdb-sentiment-lambda"
+  package_type  = "Image"
+  image_uri     = "${aws_ecr_repository.lambda_repo.repository_url}:latest"
+
+  timeout     = 30
+  memory_size = 1024
+
+  # Variáveis de ambiente
+  environment {
+    variables = {
+      MLFLOW_TRACKING_URI = var.mlflow_tracking_uri
+    }
+  }
+
+  # Role da Lambda
+  role = aws_iam_role.lambda_exec_role.arn
+}
+
