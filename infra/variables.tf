@@ -7,3 +7,8 @@ variable "mlflow_tracking_uri" {
   type        = string
 }
 
+variable "mlflow_experiment_name" {
+  description = "URI do MLflow tracking"
+  type        = string
+}
+

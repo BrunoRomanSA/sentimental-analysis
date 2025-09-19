@@ -72,7 +72,8 @@ resource "aws_lambda_function" "imdb_lambda" {
   # Variáveis de ambiente
   environment {
     variables = {
-      MLFLOW_TRACKING_URI = var.mlflow_tracking_uri
+      MLFLOW_TRACKING_URI = var.mlflow_tracking_uri,
+      MLFLOW_EXPERIMENT_NAME = var.mlflow_experiment_name
     }
   }
 
