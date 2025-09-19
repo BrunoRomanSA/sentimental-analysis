@@ -22,23 +22,22 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
-    defaults:
-      run:
-        shell: bash 
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.aws-assume-role-arn }}
+          aws-region: ${{ inputs.aws-region }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-
-      - name: Read detroy config
-        id: read-destroy-json
-        run: |
-          DESTROY="$(jq -r '.${{ inputs.environment }}' ./infra/destroy_config.json)"
-          echo "destroy=$(echo $DESTROY)" >> $GITHUB_OUTPUT
 
       - name: Terraform Initialize
         run: |
