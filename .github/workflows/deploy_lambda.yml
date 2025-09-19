@@ -18,7 +18,7 @@ jobs:
       ECR_REPO_NAME: imdb-lambda-repo
       TF_STATE_BUCKET: 503561450616-statefile-terraform
       TF_STATE_KEY: imdb-lambda/terraform.tfstate
-
+      GITHUB_ROLE: arn:aws:iam::503561450616:role/role-github-terraform-build
     steps:
       # 1️⃣ Checkout
       - name: Checkout repository
@@ -28,7 +28,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::503561450616:role/role-github-terraform-build
+          role-to-assume: ${{ env.GITHUB_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
 
       # 3️⃣ Setup Terraform
@@ -64,27 +64,11 @@ jobs:
           echo "Pushing Docker image $IMAGE_URI to ECR..."
           docker push $IMAGE_URI
 
-      # 8️⃣ Terraform Init
-      - name: Terraform Init
-        working-directory: terraform
-        run: |
-          echo "Initializing Terraform with S3 backend..."
-          terraform init \
-            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
-            -backend-config="key=${{ env.TF_STATE_KEY }}" \
-            -backend-config="region=${{ env.AWS_REGION }}"
-
-      - name: Terraform Plan
-        working-directory: terraform
-        run: |
-          echo "Running Terraform Plan..."
-          terraform plan -out=tfplan \
-            -var "mlflow_tracking_uri=${{ secrets.MLFLOW_TRACKING_URI }}" \
-            -input=false
-
-
-      - name: Terraform Apply
-        working-directory: terraform
-        run: |
-          echo "Applying Terraform changes..."
-          terraform apply -auto-approve tfplan
+  setup-infra:
+    uses: ./.github/workflows/terraform.yml
+    with:
+      environment: dev
+      aws-assume-role-arn: "arn:aws:iam::503561450616:role/role-github-terraform-build"
+      aws-statefile-s3-bucket: "503561450616-statefile-terraform"
+      aws-lock-dynamodb-table: "503561450616-terraform-lock"
+      aws-region: "us-east-1"
