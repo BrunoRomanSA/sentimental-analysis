@@ -5,20 +5,22 @@ on:
     branches:
       - develop
 
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO_NAME: imdb-lambda-repo
+  TF_STATE_BUCKET: 503561450616-statefile-terraform
+  TF_STATE_KEY: imdb-lambda/terraform.tfstate
+  GITHUB_ROLE: arn:aws:iam::503561450616:role/role-github-terraform-build
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
-
-    env:
-      AWS_REGION: us-east-1
-      ECR_REPO_NAME: imdb-lambda-repo
-      TF_STATE_BUCKET: 503561450616-statefile-terraform
-      TF_STATE_KEY: imdb-lambda/terraform.tfstate
-      GITHUB_ROLE: arn:aws:iam::503561450616:role/role-github-terraform-build
     steps:
       # 1️⃣ Checkout
       - name: Checkout repository
@@ -30,12 +32,6 @@ jobs:
         with:
           role-to-assume: ${{ env.GITHUB_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-
-      # 3️⃣ Setup Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.6.0
 
       # 4️⃣ Setup Docker
       - name: Set up Docker Buildx
