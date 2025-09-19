@@ -31,12 +31,39 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
+
+
+resource "aws_iam_role_policy" "lambda_ecr_policy" {
+  name = "lambda-ecr-access"
+  role = aws_iam_role.lambda_exec_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # Attach policy mínima para logs
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# Attach policy mínima para logs
+resource "aws_iam_role_policy_attachment" "lambda_ecr_access" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = aws_iam_policy.lambda_ecr_access.arn
+}
 
 # Lambda Function usando container image do ECR
 resource "aws_lambda_function" "imdb_lambda" {
