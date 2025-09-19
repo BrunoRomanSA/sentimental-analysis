@@ -59,11 +59,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Attach policy mínima para logs
-resource "aws_iam_role_policy_attachment" "lambda_ecr_access" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = aws_iam_policy.lambda_ecr_access.arn
-}
 
 # Lambda Function usando container image do ECR
 resource "aws_lambda_function" "imdb_lambda" {
