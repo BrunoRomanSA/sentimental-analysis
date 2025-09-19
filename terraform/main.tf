@@ -42,7 +42,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 resource "aws_lambda_function" "imdb_lambda" {
   function_name = "imdb-sentiment-lambda"
   package_type  = "Image"
-  image_uri     = "503561450616.dkr.ecr.us-east-1.amazonaws.com/imdb-lambda-repo:latest:latest"
+  image_uri     = "503561450616.dkr.ecr.us-east-1.amazonaws.com/imdb-lambda-repo:latest"
 
   timeout     = 30
   memory_size = 1024
