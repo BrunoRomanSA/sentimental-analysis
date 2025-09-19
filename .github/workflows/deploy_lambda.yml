@@ -59,13 +59,31 @@ jobs:
         run: |
           IMAGE_URI=503561450616.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          echo "Building Docker image $IMAGE_URI..."
           docker build -t $IMAGE_URI .
+          echo "Pushing Docker image $IMAGE_URI to ECR..."
           docker push $IMAGE_URI
 
       # 8️⃣ Terraform Init
       - name: Terraform Init
         working-directory: terraform
         run: |
+          echo "Initializing Terraform with S3 backend..."
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
-            -ba
+            -backend-config="key=$TF_STATE_KEY" \
+            -backend-config="region=$AWS_REGION"
+
+      - name: Terraform Plan
+        working-directory: terraform
+        run: |
+          echo "Running Terraform Plan..."
+          terraform plan -out=tfplan \
+            -var "image_uri=${{ env.IMAGE_URI }}" \
+            -var "mlflow_tracking_uri=${{ secrets.MLFLOW_TRACKING_URI }}"
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: |
+          echo "Applying Terraform changes..."
+          terraform apply -auto-approve tfplan
