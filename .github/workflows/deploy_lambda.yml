@@ -80,7 +80,9 @@ jobs:
           echo "Running Terraform Plan..."
           terraform plan -out=tfplan \
             -var "image_uri=${{ env.IMAGE_URI }}" \
-            -var "mlflow_tracking_uri=${{ secrets.MLFLOW_TRACKING_URI }}"
+            -var "mlflow_tracking_uri=${{ secrets.MLFLOW_TRACKING_URI }}" \
+            -input=false
+
 
       - name: Terraform Apply
         working-directory: terraform
