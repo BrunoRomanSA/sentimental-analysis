@@ -21,37 +21,16 @@ resource "aws_iam_role" "lambda_exec_role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
           Service = "lambda.amazonaws.com"
         }
+        Action = "sts:AssumeRole"
       }
     ]
   })
 }
 
-
-
-# resource "aws_iam_role_policy" "lambda_ecr_policy" {
-#   name = "lambda-ecr-access"
-#   role = aws_iam_role.lambda_exec_role.id
-
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "ecr:GetAuthorizationToken",
-#           "ecr:BatchGetImage",
-#           "ecr:GetDownloadUrlForLayer"
-#         ]
-#         Resource = "*"
-#       }
-#     ]
-#   })
-# }
 
 # Attach policy mínima para logs
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
@@ -65,6 +44,30 @@ resource "aws_iam_role_policy_attachment" "lambda_ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+
+# 👇 nova policy inline com sts:GetServiceBearerToken
+resource "aws_iam_role_policy" "lambda_sts_token" {
+  name = "lambda-sts-token"
+  role = aws_iam_role.lambda_exec_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sts:GetServiceBearerToken"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "sts:AWSServiceName" = "ecr.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
 
 
 
