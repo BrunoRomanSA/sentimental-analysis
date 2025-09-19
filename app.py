@@ -1,15 +1,18 @@
 import os
 import json
 import mlflow
-from dotenv import load_dotenv
+import logging
 
-# Carrega variáveis do .env (MLFLOW_TRACKING_URI)
-load_dotenv()
+# Configurar o logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  
 
+logger.info(f'MLflow Tracking URI: {os.getenv("MLFLOW_TRACKING_URI")}')
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 
 # Modelo do MLflow Registry
 model_uri = "models:/IMDBSentimentModel@prod"
+logger.info(f'Carregr modelo: {os.getenv("MLFLOW_TRACKING_URI")}')
 model = mlflow.pyfunc.load_model(model_uri)
 
 def lambda_handler(event, context):
@@ -17,6 +20,8 @@ def lambda_handler(event, context):
     Espera evento JSON:
     {"reviews": ["texto1", "texto2", ...]}
     """
+    # Log de entrada do evento
+    logger.info(f"Recebido evento: {json.dumps(event)}")
     reviews = event.get("reviews", [])
     if not reviews:
         return {
