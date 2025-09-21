@@ -156,5 +156,5 @@ resource "aws_api_gateway_account" "account" {
 # --- 9. Log Group para armazenar os logs do API Gateway ---
 resource "aws_cloudwatch_log_group" "apigateway_logs" {
   name              = "/aws/apigateway/sentiment-api"
-  retention_in_days = 2
+  retention_in_days = 3
 }
