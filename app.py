@@ -22,7 +22,8 @@ def lambda_handler(event, context):
     """
     # Log de entrada do evento
     logger.info(f"Recebido evento: {json.dumps(event)}")
-    reviews = event.get("reviews", [])
+    content = json.loads(event["body"])
+    reviews = content.get("reviews", [])
     if not reviews:
         return {
             "statusCode": 400,
