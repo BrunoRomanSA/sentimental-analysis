@@ -12,3 +12,13 @@ variable "mlflow_experiment_name" {
   type        = string
 }
 
+variable "region" {
+  description = "Região da AWS"
+  default     = "us-east-1"
+}
+
+variable "account_id" {
+  description = "ID da conta AWS"
+  # Substitua pelo ID da sua conta
+  default     = "503561450616" 
+}

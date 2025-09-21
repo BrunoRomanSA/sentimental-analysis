@@ -5,3 +5,9 @@ output "lambda_function_name" {
 # output "ecr_repo_url" {
 #   value = aws_ecr_repository.lambda_repo.repository_url
 # }
+
+
+output "api_url" {
+  description = "URL do API Gateway"
+  value       = "${aws_api_gateway_deployment.reviews_deployment.invoke_url}/${aws_api_gateway_resource.reviews_resource.path_part}"
+}
