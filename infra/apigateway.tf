@@ -81,7 +81,7 @@ resource "aws_api_gateway_deployment" "reviews_deployment" {
   depends_on = [
     aws_api_gateway_method.reviews_post_method,
     aws_api_gateway_integration.lambda_integration,
-    aws_api_gateway_method_response.reviews_options_response,
+    aws_api_gateway_method_response.reviews_post_response,
     aws_api_gateway_integration_response.reviews_post_integration_response
   ]
 
@@ -90,7 +90,7 @@ resource "aws_api_gateway_deployment" "reviews_deployment" {
     redeployment = sha1(jsonencode([
       aws_api_gateway_method.reviews_post_method.id,
       aws_api_gateway_integration.lambda_integration.id,
-      aws_api_gateway_method_response.reviews_options_response.id,
+      aws_api_gateway_method_response.reviews_post_response.id,
       aws_api_gateway_integration_response.reviews_post_integration_response.id
     ]))
   }
