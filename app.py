@@ -23,6 +23,7 @@ def lambda_handler(event, context):
     # Log de entrada do evento
     logger.info(f"Recebido evento: {json.dumps(event)}")
     content = json.loads(event["body"])
+    logger.info(f"Extraido conteudo do evento: {content} e tido do conteudo {type(content)}")
     reviews = content.get("reviews", [])
     if not reviews:
         return {
