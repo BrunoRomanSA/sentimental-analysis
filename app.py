@@ -28,11 +28,21 @@ def lambda_handler(event, context):
     if not reviews:
         return {
             "statusCode": 400,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST,OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            },
             "body": json.dumps({"error": "Nenhuma review fornecida"})
         }
 
     preds = model.predict(reviews).tolist()
     return {
         "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST,OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        },
         "body": json.dumps({"predictions": preds})
     }
