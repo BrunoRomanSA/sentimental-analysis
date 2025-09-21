@@ -82,7 +82,7 @@ resource "aws_api_gateway_deployment" "reviews_deployment" {
     aws_api_gateway_method.reviews_post_method,
     aws_api_gateway_integration.lambda_integration,
     aws_api_gateway_method_response.reviews_options_response,
-    aws_api_gateway_integration_response.reviews_options_integration_response
+    aws_api_gateway_integration_response.reviews_post_integration_response
   ]
 
   # Adiciona um "gatilho" para forçar uma nova implantação quando a configuração muda
@@ -91,7 +91,7 @@ resource "aws_api_gateway_deployment" "reviews_deployment" {
       aws_api_gateway_method.reviews_post_method.id,
       aws_api_gateway_integration.lambda_integration.id,
       aws_api_gateway_method_response.reviews_options_response.id,
-      aws_api_gateway_integration_response.reviews_options_integration_response.id
+      aws_api_gateway_integration_response.reviews_post_integration_response.id
     ]))
   }
 }
