@@ -76,18 +76,30 @@ resource "aws_api_gateway_integration_response" "reviews_options_integration_res
   }
 }
 
-# --- 6. Define o "Deploy" da API ---
+# --- 6. Define o "Deploy" e o "Stage" da API ---
 # O API Gateway precisa ser "publicado" para ser acessível
 resource "aws_api_gateway_deployment" "reviews_deployment" {
   rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
 
-  # Depende da criação do método POST e da integração
+  # Depende da criação do método POST, da integração e das configurações de CORS
   depends_on = [
     aws_api_gateway_method.reviews_post_method,
     aws_api_gateway_integration.lambda_integration,
-    aws_api_gateway_method_response.reviews_options_response
+    aws_api_gateway_method_response.reviews_options_response,
+    aws_api_gateway_integration_response.reviews_options_integration_response
   ]
+
+  # Adiciona um "gatilho" para forçar uma nova implantação quando a configuração muda
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_method.reviews_post_method.id,
+      aws_api_gateway_integration.lambda_integration.id,
+      aws_api_gateway_method_response.reviews_options_response.id,
+      aws_api_gateway_integration_response.reviews_options_integration_response.id
+    ]))
+  }
 }
+
 
 # --- 6.1. Define o Stage da API ---
 resource "aws_api_gateway_stage" "reviews_stage" {
