@@ -35,6 +35,11 @@ resource "aws_iam_role_policy_attachment" "lambda_ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+# Attach policy mínima para logs
+resource "aws_iam_role_policy_attachment" "lambda_s3_policy" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
 
 # 👇 nova policy inline com sts:GetServiceBearerToken
 resource "aws_iam_role_policy" "lambda_sts_token" {
