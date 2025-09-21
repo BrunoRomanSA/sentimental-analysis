@@ -2,7 +2,6 @@ FROM public.ecr.aws/lambda/python:3.12
 
 # Copia os arquivos
 COPY app.py requirements.txt ./
-COPY .env .env
 
 
 # Atualiza pip, setuptools e wheel
