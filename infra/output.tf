@@ -9,5 +9,5 @@ output "lambda_function_name" {
 
 output "api_url" {
   description = "URL do API Gateway"
-  value       = "${aws_api_gateway_deployment.reviews_deployment.invoke_url}/${aws_api_gateway_resource.reviews_resource.path_part}"
+  value       = "${aws_api_gateway_stage.reviews_stage.invoke_url}/${aws_api_gateway_resource.reviews_resource.path_part}"
 }
