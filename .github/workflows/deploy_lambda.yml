@@ -85,6 +85,7 @@ jobs:
 
   setup-infra:
     uses: ./.github/workflows/terraform.yml
+    needs: deploy
     with:
       environment: dev
       aws-assume-role-arn: arn:aws:iam::503561450616:role/role-github-terraform-build
