@@ -80,7 +80,6 @@ resource "aws_api_gateway_integration_response" "reviews_options_integration_res
 # O API Gateway precisa ser "publicado" para ser acessível
 resource "aws_api_gateway_deployment" "reviews_deployment" {
   rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
-  stage_name  = "dev" # Nome do ambiente de publicação
 
   # Depende da criação do método POST e da integração
   depends_on = [
@@ -88,6 +87,13 @@ resource "aws_api_gateway_deployment" "reviews_deployment" {
     aws_api_gateway_integration.lambda_integration,
     aws_api_gateway_method_response.reviews_options_response
   ]
+}
+
+# --- 6.1. Define o Stage da API ---
+resource "aws_api_gateway_stage" "reviews_stage" {
+  deployment_id = aws_api_gateway_deployment.reviews_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.sentiment_api.id
+  stage_name    = "dev"
 }
 
 # --- 7. Adiciona permissão para o API Gateway invocar a Lambda ---
