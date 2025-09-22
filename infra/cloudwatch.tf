@@ -48,3 +48,14 @@ resource "aws_cloudwatch_metric_alarm" "accuracy_alarm" {
 
 
 }
+
+resource "aws_sns_topic" "ml_model_alerts" {
+  name = "ml-model-accuracy-alerts"
+  depends_on = [aws_cloudwatch_metric_alarm.accuracy_alarm]
+}
+
+resource "aws_sns_topic_subscription" "email_alert" {
+  topic_arn = aws_sns_topic.ml_model_alerts.arn
+  protocol  = "email"
+  endpoint  = "brunoroman05@gmail.com"
+}
