@@ -56,6 +56,13 @@ resource "aws_iam_role_policy" "lambda_sts_token" {
             "sts:AWSServiceName" = "ecr.amazonaws.com"
           }
         }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem"
+        ]
+        Resource = "arn:aws:dynamodb:us-east-1:503561450616:table/output_modelo_imdb"
       }
     ]
   })
