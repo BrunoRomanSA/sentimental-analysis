@@ -11,10 +11,25 @@ resource "aws_api_gateway_resource" "reviews_resource" {
   path_part   = "reviews"
 }
 
+# --- 2b. Cria o Recurso /evaluate (a rota) ---
+resource "aws_api_gateway_resource" "evaluate_resource" {
+  rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
+  parent_id   = aws_api_gateway_rest_api.sentiment_api.root_resource_id
+  path_part   = "evaluate"
+}
+
 # --- 3. Define o Método POST para a rota /reviews ---
 resource "aws_api_gateway_method" "reviews_post_method" {
   rest_api_id   = aws_api_gateway_rest_api.sentiment_api.id
   resource_id   = aws_api_gateway_resource.reviews_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+# --- 3b. Define o Método POST para a rota /evaluate ---
+resource "aws_api_gateway_method" "evaluate_post_method" {
+  rest_api_id   = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id   = aws_api_gateway_resource.evaluate_resource.id
   http_method   = "POST"
   authorization = "NONE"
 }
@@ -27,6 +42,16 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:503561450616:function:imdb-sentiment-lambda/invocations"
+}
+
+# --- 4b. Integração entre POST /evaluate e Lambda evaluate ---
+resource "aws_api_gateway_integration" "evaluate_lambda_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id             = aws_api_gateway_resource.evaluate_resource.id
+  http_method             = aws_api_gateway_method.evaluate_post_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:503561450616:function:evaluate-sentiment-lambda/invocations"
 }
 
 # --- 5. Habilita o CORS ---
@@ -106,6 +131,84 @@ resource "aws_api_gateway_integration_response" "reviews_options_integration_res
   }
 }
 
+# --- 5b. Habilita o CORS para /evaluate ---
+# OPTIONS method
+resource "aws_api_gateway_method" "evaluate_options_method" {
+  rest_api_id   = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id   = aws_api_gateway_resource.evaluate_resource.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "evaluate_options_integration" {
+  rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id = aws_api_gateway_resource.evaluate_resource.id
+  http_method = aws_api_gateway_method.evaluate_options_method.http_method
+  type        = "MOCK"
+  request_templates = {
+    "application/json" = "{\"statusCode\":200}"
+  }
+}
+
+# Resposta do POST /evaluate
+resource "aws_api_gateway_method_response" "evaluate_post_response" {
+  rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id = aws_api_gateway_resource.evaluate_resource.id
+  http_method = aws_api_gateway_method.evaluate_post_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "evaluate_post_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id = aws_api_gateway_resource.evaluate_resource.id
+  http_method = aws_api_gateway_method.evaluate_post_method.http_method
+  status_code = aws_api_gateway_method_response.evaluate_post_response.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+}
+
+# Resposta do OPTIONS (CORS) /evaluate
+resource "aws_api_gateway_method_response" "evaluate_options_response" {
+  rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id = aws_api_gateway_resource.evaluate_resource.id
+  http_method = aws_api_gateway_method.evaluate_options_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "evaluate_options_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
+  resource_id = aws_api_gateway_resource.evaluate_resource.id
+  http_method = aws_api_gateway_method.evaluate_options_method.http_method
+  status_code = aws_api_gateway_method_response.evaluate_options_response.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  response_templates = {
+    "application/json" = ""
+  }
+}
+
+
 # --- 6. Define o "Deploy" e o "Stage" da API ---
 resource "aws_api_gateway_deployment" "reviews_deployment" {
   rest_api_id = aws_api_gateway_rest_api.sentiment_api.id
@@ -161,6 +264,16 @@ resource "aws_lambda_permission" "apigw_lambda_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = "imdb-sentiment-lambda"
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.sentiment_api.id}/*/*"
+}
+
+# --- 7b. Permissão para API Gateway invocar a Lambda evaluate ---
+resource "aws_lambda_permission" "apigw_lambda_permission_evaluate" {
+  statement_id  = "AllowAPIGatewayInvokeEvaluate"
+  action        = "lambda:InvokeFunction"
+  function_name = "evaluate-sentiment-lambda"
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.sentiment_api.id}/*/*"

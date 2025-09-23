@@ -60,7 +60,8 @@ resource "aws_iam_role_policy" "lambda_sts_token" {
       {
         Effect = "Allow"
         Action = [
-          "dynamodb:PutItem"
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem"
         ]
         Resource = "arn:aws:dynamodb:us-east-1:503561450616:table/output_modelo_imdb"
       }
