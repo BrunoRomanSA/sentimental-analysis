@@ -64,6 +64,13 @@ resource "aws_iam_role_policy" "lambda_sts_token" {
           "dynamodb:UpdateItem"
         ]
         Resource = "arn:aws:dynamodb:us-east-1:503561450616:table/output_modelo_imdb"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter"
+        ]
+        Resource = "arn:aws:ssm:us-east-1:503561450616:parameter/model/register/url"
       }
     ]
   })

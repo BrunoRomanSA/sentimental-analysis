@@ -3,17 +3,57 @@ import json
 import boto3
 import mlflow
 import logging
+from botocore.exceptions import ClientError
 
+def get_ssm_parameter(parameter_name: str, region_name: str = "us-east-1") -> str:
+    """
+    Busca o valor de um parâmetro no AWS Systems Manager (SSM) Parameter Store.
+
+    Args:
+        parameter_name (str): O nome do parâmetro a ser buscado (ex: /model/register/url).
+        region_name (str): A região da AWS onde o parâmetro está localizado. 
+                             O padrão é 'us-east-1'.
+
+    Returns:
+        str: O valor do parâmetro se encontrado, caso contrário, None.
+    """
+    try:
+        # Cria um cliente SSM
+        # Se as credenciais não forem passadas, o Boto3 tentará encontrá-las
+        # automaticamente (variáveis de ambiente, arquivo de credenciais, perfil IAM da instância).
+        ssm_client = boto3.client('ssm', region_name=region_name)
+
+        # Busca o parâmetro
+        # WithDecryption=True é necessário para parâmetros do tipo SecureString
+        response = ssm_client.get_parameter(
+            Name=parameter_name,
+            WithDecryption=True
+        )
+
+        # Extrai e retorna o valor do parâmetro da resposta
+        return response['Parameter']['Value']
+
+    except ClientError as e:
+        # Trata o erro específico de parâmetro não encontrado
+        if e.response['Error']['Code'] == 'ParameterNotFound':
+            print(f"Erro: O parâmetro '{parameter_name}' não foi encontrado na região '{region_name}'.")
+        else:
+            # Trata outros erros possíveis da API
+            print(f"Ocorreu um erro inesperado ao acessar a AWS: {e}")
+        return None
+    except Exception as e:
+        print(f"Ocorreu um erro no script: {e}")
+        return None
 # Configurar o logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)  
 
 logger.info(f'MLflow Tracking URI: {os.getenv("MLFLOW_TRACKING_URI")}')
-mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+mlflow.set_tracking_uri(get_ssm_parameter(os.getenv("MLFLOW_TRACKING_URI")))
 
 # Modelo do MLflow Registry
 model_uri = "models:/IMDBSentimentModel@prod"
-logger.info(f'Carregr modelo: {os.getenv("MLFLOW_TRACKING_URI")}')
+logger.info(f'Carregr modelo: {get_ssm_parameter(os.getenv("MLFLOW_TRACKING_URI"))}')
 model = mlflow.pyfunc.load_model(model_uri)
 
 dynamodb = boto3.resource("dynamodb")
