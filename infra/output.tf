@@ -22,8 +22,3 @@ output "ssm_parameter_name" {
   description = "O nome do parâmetro SSM criado."
   value       = aws_ssm_parameter.model_register_url.name
 }
-
-output "ssm_parameter_value" {
-  description = "O valor do parâmetro SSM criado."
-  value       = aws_ssm_parameter.model_register_url.value
-}
